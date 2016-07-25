@@ -7,7 +7,7 @@ const express = require("express"),
 var app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors({
-    origin: ['http://'+process.env.ALLOWEDHOST, 'https://'+process.env.ALLOWEDHOST],
+    origin: process.env.ALLOWEDHOST.split(','),
     methods: 'GET'
 }));
 
@@ -36,6 +36,5 @@ app.post('/api/new', function(req, res) {
         res.send('success');
     });
 });
-
 
 app.listen(process.env.PORT);
