@@ -1,0 +1,30 @@
+{
+  "name": "stacckfaq",
+  "version": "1.0.0",
+  "description": "stacck FAQ",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stanleynguyen/stacckfaq.git"
+  },
+  "keywords": [
+    "stacck",
+    "f&b"
+  ],
+  "author": "stanleynguyen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stanleynguyen/stacckfaq/issues"
+  },
+  "homepage": "https://github.com/stanleynguyen/stacckfaq#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "mongoose": "^4.5.6",
+    "node-html-encoder": "0.0.2"
+  }
+}
