@@ -7,7 +7,7 @@ const express = require("express"),
       basic = auth.basic({
           realm: "Stacck FAQ",
       }, function(username, password, callback) {
-          callback(username === 'admin' && password === 'password');
+          callback(username === process.env.USER && password === process.env.PASSWORD);
       });
 
 var app = express();
