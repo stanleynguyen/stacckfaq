@@ -46,8 +46,8 @@ app.put('/api', function(req, res) {
     FAQ.findOne({_id: req.body.id}, function(err, doc){
         if (err) return res.send('error');
         if (!doc) return res.send('error');
-        doc.question = req.body.question;
-        doc.answer = req.body.answer;
+        doc.question = encoder.htmlEncode(req.body.question);
+        doc.answer = encoder.htmlEncode(req.body.answer).replace(/&#10;/g, '<br/>');
         doc.save(function(err) {
             if (err) return res.send('error');
             res.send('success');
