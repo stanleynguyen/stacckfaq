@@ -2,7 +2,13 @@ const express = require("express"),
       mongoose = require("mongoose"),
       bodyParser = require("body-parser"),
       Encoder = require("node-html-encoder").Encoder,
-      cors = require("cors");
+      cors = require("cors"),
+      auth = require("http-auth"),
+      basic = auth.basic({
+          realm: "Stacck FAQ",
+      }, function(username, password, callback) {
+          callback(username === 'admin' && password === 'password');
+      });
 
 var app = express();
 app.set('view engine', 'ejs');
@@ -12,13 +18,14 @@ app.use(cors({
     origin: process.env.ALLOWEDHOST.split(','),
     methods: 'GET'
 }));
+// app.use(auth.connect(basic));
 
 mongoose.connect(process.env.DATABASE);
 var FAQ = require("./app/models/faq");
 
 var encoder = new Encoder('entity');
 
-app.get('/', function(req, res) {
+app.get('/', auth.connect(basic), function(req, res) {
     FAQ.find({}, function(err , docs) {
         if (err) return res.redirect('/');
         res.render('index.ejs', {faq: docs});
@@ -31,7 +38,7 @@ app.get('/api', function(req, res) {
         res.json(data);
     });
 });
-
+//dont need to secure api
 app.post('/api', function(req, res) {
     var newFaq = new FAQ();
     newFaq.question = encoder.htmlEncode(req.body.question);
