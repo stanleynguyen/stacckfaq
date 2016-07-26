@@ -11,20 +11,40 @@ $(document).ready(function() {
             url: '/api',
             type: 'POST',
             data: data
-        }).done(function(result) {
-            if (result === 'success') {
+        }).done(function(newFaq) {
+            if (typeof newFaq === 'object') {
                 $('.alert-success').show();
                 $question.val('');
                 $answer.val('');
                 setTimeout(function() {
                     $('.alert-success').hide();
                 }, 5000);
+                console.log(newFaq)
+                var htmlBody = '<div class="jumbotron" id="' + newFaq.id + '">\
+                    <form>\
+                      <fieldset class="form-group">\
+                        <label for="question">Question</label>\
+                        <input type="text" class="form-control question" value="' + newFaq.question + '" disabled required/>\
+                      </fieldset>\
+                      <fieldset class="form-group">\
+                        <label for="answer">Answer</label>\
+                        <textarea class="form-control answer" disabled required>' + newFaq.answer + '</textarea>\
+                      </fieldset>\
+                      <button class="btn btn-primary" type="button"><i class="glyphicon glyphicon-pencil"></i> Edit</button>\
+                      <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>\
+                      <button class="btn btn-default" type="button">Cancel</button>\
+                      <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-trash"></i> Delete</button>\
+                    </form>\
+                </div>';
+                $('#faq').append(htmlBody);
             } else {
-                $('.alert-danger').show();
+                setTimeout(function(){
+                    $('.alert-danger').show();
+                }, 5000);
             }
         }).fail(function(err) {
             $('.alert-danger').show();
-        })
+        });
     });
     
     $('#faq form .btn-primary').click(function() {

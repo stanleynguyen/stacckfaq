@@ -38,7 +38,7 @@ app.post('/api', function(req, res) {
     newFaq.answer = encoder.htmlEncode(req.body.answer).replace(/&#10;/g, '<br/>');
     newFaq.save(function(err) {
         if (err) return res.send('error');
-        res.send('success');
+        res.json(newFaq);
     });
 });
 
