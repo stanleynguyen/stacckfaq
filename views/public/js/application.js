@@ -28,7 +28,7 @@ $(document).ready(function() {
                       </fieldset>\
                       <fieldset class="form-group">\
                         <label for="answer">Answer</label>\
-                        <textarea class="form-control answer" disabled required>' + newFaq.answer + '</textarea>\
+                        <textarea class="form-control answer" disabled required>' + newFaq.answer.replace(/<br\/>/g, '\n') + '</textarea>\
                       </fieldset>\
                       <button class="btn btn-primary" type="button"><i class="glyphicon glyphicon-pencil"></i> Edit</button>\
                       <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>\
