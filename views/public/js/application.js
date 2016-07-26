@@ -62,21 +62,24 @@ $(document).ready(function() {
         });
         
         $('#faq form .btn-danger').click(function() {
-            var id = $(this).parent().parent().attr('id');
-            console.log(id);
-            $.ajax({
-                url: '/api',
-                type: 'DELETE',
-                data: {id: id}
-            }).done(function(message) {
-                if (message === 'success'){
-                    $('#' + id).remove();
-                } else {
-                    alert('database error! please try again!');
-                }
-            }).fail(function() {
-                alert('fail to delete! please try again!');
-            });
+            var confirmation = confirm('Are you sure want to delete this question?');
+            if (confirmation === true){
+                var id = $(this).parent().parent().attr('id');
+                console.log(id);
+                $.ajax({
+                    url: '/api',
+                    type: 'DELETE',
+                    data: {id: id}
+                }).done(function(message) {
+                    if (message === 'success'){
+                        $('#' + id).remove();
+                    } else {
+                        alert('database error! please try again!');
+                    }
+                }).fail(function() {
+                    alert('fail to delete! please try again!');
+                });
+            }
         });
         
         $('#faq form').submit(function() {
