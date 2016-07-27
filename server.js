@@ -38,8 +38,8 @@ app.get('/api', function(req, res) {
         res.json(data);
     });
 });
-//dont need to secure api
-app.post('/api', function(req, res) {
+
+app.post('/api', auth.connect(basic), function(req, res) {
     var newFaq = new FAQ();
     newFaq.question = encoder.htmlEncode(req.body.question);
     newFaq.answer = encoder.htmlEncode(req.body.answer).replace(/&#10;/g, '<br/>');
@@ -49,7 +49,7 @@ app.post('/api', function(req, res) {
     });
 });
 
-app.put('/api', function(req, res) {
+app.put('/api', auth.connect(basic), function(req, res) {
     FAQ.findOne({_id: req.body.id}, function(err, doc){
         if (err) return res.send('error');
         if (!doc) return res.send('error');
@@ -62,7 +62,7 @@ app.put('/api', function(req, res) {
     });
 });
 
-app.delete('/api', function(req, res) {
+app.delete('/api', auth.connect(basic), function(req, res) {
     FAQ.findOneAndRemove({_id: req.body.id}, function(err) {
         if (err) return res.send('error');
         res.send('success');
