@@ -1,8 +1,10 @@
 $(document).ready(function() {
     $('#form').submit(function(event) {
         event.preventDefault();
-        var $question = $(this).find('.question');
-        var $answer = $(this).find('.answer');
+        var $this = $(this);
+        $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Submitting...</button>');
+        var $question = $this.find('.question');
+        var $answer = $this.find('.answer');
         var data = {
             question: $question.val(),
             answer: $answer.val()
@@ -14,6 +16,7 @@ $(document).ready(function() {
         }).done(function(newFaq) {
             if (typeof newFaq === 'object') {
                 $('.alert-success').show();
+                $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>');
                 $question.val('');
                 $answer.val('');
                 setTimeout(function() {
@@ -38,12 +41,16 @@ $(document).ready(function() {
                 $('#faq').append(htmlBody);
                 bindButtonsEvent();
             } else {
+                $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>');
                 setTimeout(function(){
                     $('.alert-danger').show();
                 }, 5000);
             }
         }).fail(function(err) {
-            $('.alert-danger').show();
+            $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>');
+            setTimeout(function(){
+                $('.alert-danger').show();
+            }, 5000);
         });
     });
     function bindButtonsEvent() {
@@ -64,7 +71,9 @@ $(document).ready(function() {
         $('#faq form .btn-danger').click(function() {
             var confirmation = confirm('Are you sure want to delete this question?');
             if (confirmation === true){
-                var id = $(this).parent().parent().attr('id');
+                var $this = $(this);
+                var id = $this.parent().parent().attr('id');
+                $this.parent().children('.btn-danger').replaceWith('<button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Deleting...</button>');
                 console.log(id);
                 $.ajax({
                     url: '/api',
@@ -74,9 +83,13 @@ $(document).ready(function() {
                     if (message === 'success'){
                         $('#' + id).remove();
                     } else {
+                        $this.parent().children('.btn-danger').replaceWith('<button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-trash"></i> Delete</button>');
+                        bindButtonsEvent();
                         alert('database error! please try again!');
                     }
                 }).fail(function() {
+                    $this.parent().children('.btn-danger').replaceWith('<button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-trash"></i> Delete</button>');
+                    bindButtonsEvent();
                     alert('fail to delete! please try again!');
                 });
             }
@@ -85,6 +98,7 @@ $(document).ready(function() {
         $('#faq form').submit(function() {
             event.preventDefault();
             var $this = $(this);
+            $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="button" style="display: inline-block;"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Saving...</button>');
             var data = {
                 id: $(this).parent().attr('id'),
                 question: $(this).find('.question').val(),
@@ -96,14 +110,17 @@ $(document).ready(function() {
                 data: data
             }).done(function(message) {
                 if (message === 'success') {
+                    $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
                     $this.find('.btn-success').hide();
                     $this.find('.btn-default').hide();
                     $this.find('.btn-primary').show();
                     $this.find('.form-control').prop('disabled', true);
                 } else {
+                    $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
                     alert('database error! please try again!');
                 }
             }).fail(function() {
+                $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
                 alert('fail to update! please try again!');
             });
         });
