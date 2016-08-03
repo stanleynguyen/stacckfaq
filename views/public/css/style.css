@@ -2,6 +2,10 @@
   display: none;
 }
 
+.alert {
+  margin-top: 5px;
+}
+
 body .container form textarea {
   height: 100px;
 }

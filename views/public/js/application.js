@@ -3,22 +3,24 @@ $(document).ready(function() {
         event.preventDefault();
         var $this = $(this);
         $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Submitting...</button>');
-        var $question = $this.find('.question');
-        var $answer = $this.find('.answer');
-        var data = {
-            question: $question.val(),
-            answer: $answer.val()
-        };
+        var formData = new FormData();
+        formData.append('question', $this.find('input[name="question"]').val());
+        formData.append('answer', $this.find('textarea[name="answer"]').val());
+        formData.append('image', $this.find('input[name="image"]')[0].files[0]);
         $.ajax({
             url: '/api',
             type: 'POST',
-            data: data
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
         }).done(function(newFaq) {
             if (typeof newFaq === 'object') {
                 $('.alert-success').show();
                 $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>');
-                $question.val('');
-                $answer.val('');
+                $this.find('input[name="question"]').val('');
+                $this.find('textarea[name="answer"]').val('');
+                $this.find('input[name="image"]').val('');
                 setTimeout(function() {
                     $('.alert-success').hide();
                 }, 5000);
@@ -31,6 +33,18 @@ $(document).ready(function() {
                       <fieldset class="form-group">\
                         <label for="answer">Answer</label>\
                         <textarea class="form-control answer" disabled required>' + newFaq.answer.replace(/<br\/>/g, '\n') + '</textarea>\
+                      </fieldset>';
+                if (newFaq.image) {
+                    htmlBody += '<fieldset class="form-group">\
+                        <button type="button" class="close">&times;</button>\
+                        <label for="current-image">Current Image</label>\
+                        <image class="img-responsive" src="' + newFaq.image + '"/>\
+                      </fieldset>';
+                }
+                
+                htmlBody += '<fieldset class="form-group">\
+                        <label for="Image">Upload New Image</label>\
+                        <input name="image" type="file" class="file" disabled/>\
                       </fieldset>\
                       <button class="btn btn-primary" type="button"><i class="glyphicon glyphicon-pencil"></i> Edit</button>\
                       <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>\
@@ -42,14 +56,16 @@ $(document).ready(function() {
                 bindButtonsEvent();
             } else {
                 $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>');
+                $('.alert-danger').show();
                 setTimeout(function(){
-                    $('.alert-danger').show();
+                    $('.alert-danger').hide();
                 }, 5000);
             }
         }).fail(function(err) {
             $this.children('button').replaceWith('<button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>');
+            $('.alert-danger').show();
             setTimeout(function(){
-                $('.alert-danger').show();
+                $('.alert-danger').hide();
             }, 5000);
         });
     });
@@ -59,6 +75,7 @@ $(document).ready(function() {
             $(this).siblings('.btn-success').show();
             $(this).siblings('.btn-default').show();
             $(this).siblings('.form-group').children('.form-control').prop('disabled', false);
+            $(this).siblings('.form-group').children('input[name="image"]').prop('disabled', false);
         });
         
         $('#faq form .btn-default').click(function() {
@@ -66,15 +83,14 @@ $(document).ready(function() {
             $(this).siblings('.btn-success').hide();
             $(this).siblings('.btn-primary').show();
             $(this).siblings('.form-group').children('.form-control').prop('disabled', true);
+            $(this).siblings('.form-group').children('input[name="image"]').prop('disabled', true);
         });
         
         $('#faq form .btn-danger').click(function() {
-            var confirmation = confirm('Are you sure want to delete this question?');
-            if (confirmation === true){
+            if (confirm('Are you sure want to delete this question?')){
                 var $this = $(this);
                 var id = $this.parent().parent().attr('id');
                 $this.parent().children('.btn-danger').replaceWith('<button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Deleting...</button>');
-                console.log(id);
                 $.ajax({
                     url: '/api',
                     type: 'DELETE',
@@ -95,35 +111,81 @@ $(document).ready(function() {
             }
         });
         
-        $('#faq form').submit(function() {
-            event.preventDefault();
+        $('#faq .close').click(function() {
             var $this = $(this);
-            $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="button" style="display: inline-block;"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Saving...</button>');
-            var data = {
-                id: $(this).parent().attr('id'),
-                question: $(this).find('.question').val(),
-                answer: $(this).find('.answer').val()
-            };
             $.ajax({
-                url: '/api',
-                type: 'PUT',
-                data: data
-            }).done(function(message) {
-                if (message === 'success') {
-                    $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
-                    $this.find('.btn-success').hide();
-                    $this.find('.btn-default').hide();
-                    $this.find('.btn-primary').show();
-                    $this.find('.form-control').prop('disabled', true);
+                url: '/api/image',
+                type: 'DELETE',
+                data: {id: $this.parent().parent().parent().attr('id')}
+            }).done(function(res) {
+                if (res === 'error') {
+                    alert('Error! Please try removing the picture again!');
                 } else {
-                    $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
-                    alert('database error! please try again!');
+                    $this.parent().remove();
                 }
             }).fail(function() {
-                $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
-                alert('fail to update! please try again!');
+                alert('Server Error! Please try removing the picture again!');
             });
         });
     }
+    
+    $('#faq form').submit(function() {
+        event.preventDefault();
+        var $this = $(this);
+        $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="button" style="display: inline-block;"><i class="glyphicon glyphicon-repeat glyphicon-spin"></i> Saving...</button>');
+        var formData = new FormData();
+        formData.append('id', $this.parent().attr('id'));
+        formData.append('question', $this.find('input[name="question"]').val());
+        formData.append('answer', $this.find('textarea[name="answer"]').val());
+        formData.append('image', $this.find('input[name="image"]')[0].files[0]);
+        $.ajax({
+            url: '/api',
+            type: 'PUT',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
+        }).done(function(res) {
+            if (typeof res === 'object') {
+                $this.html('');
+                var htmlBody = '<form>\
+                                  <fieldset class="form-group">\
+                                    <label for="question">Question</label>\
+                                    <input name="question" type="text" class="form-control" value="' + res.question + '" disabled required/>\
+                                  </fieldset>\
+                                  <fieldset class="form-group">\
+                                    <label for="answer">Answer</label>\
+                                    <textarea name="answer" class="form-control" disabled required>' + res.answer.replace(/<br\/>/g, '\n') + '</textarea>\
+                                  </fieldset>';
+                if (res.image) {
+                    htmlBody += '<fieldset class="form-group">\
+                                    <button type="button" class="close">&times;</button>\
+                                    <label for="current-image">Current Image</label>\
+                                    <image class="img-responsive" src="' + res.image + '"/>\
+                                  </fieldset>';
+                }
+                htmlBody += '<fieldset class="form-group">\
+                               <label for="Image">Upload New Image</label>\
+                               <input name="image" type="file" class="file" disabled/>\
+                             </fieldset>\
+                             <button class="btn btn-primary" type="button"><i class="glyphicon glyphicon-pencil"></i> Edit</button>\
+                             <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>\
+                             <button class="btn btn-default" type="button">Cancel</button>\
+                             <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-trash"></i> Delete</button>\
+                           </form>';
+                $this.html(htmlBody);
+                bindButtonsEvent();
+                
+            } else if (res === 'error'){
+                $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
+                $this.children('.btn-success').show();
+                alert('Server error! please try again!');
+            }
+        }).fail(function() {
+            $this.children('.btn-success').replaceWith('<button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>');
+            $this.children('.btn-success').show();
+            alert('fail to update! please try again!');
+        });
+    });
     bindButtonsEvent();
 });

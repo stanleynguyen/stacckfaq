@@ -12,15 +12,20 @@
   <div class="container">
     <div class="row">
       <h2 class="text-center">Add more faq(s)</h2>
+      <h5 class="text-center"><em>*note: image format accepted are jpg, jpeg, gif, bmp, svg</em></h5>
       <div class="col-md-offset-2 col-md-8 col-xs-12">
-        <form id="form" style="padding-bottom: 5px;">
+        <form id="form" method="post" action="/api" enctype="multipart/form-data">
           <fieldset class="form-group">
             <label for="question">Question</label>
-            <input type="text" class="form-control question" placeholder="Question..." required>
+            <input type="text" name="question" class="form-control" placeholder="Question..." required>
           </fieldset>
           <fieldset class="form-group">
             <label for="answer">Answer</label>
-            <textarea class="form-control answer" placeholder="Answer..." required></textarea>
+            <textarea name="answer" class="form-control" placeholder="Answer..." required></textarea>
+          </fieldset>
+          <fieldset class="form-group">
+            <label for="Image">Upload Image</label>
+            <input name="image" type="file" class="file"/>
           </fieldset>
           <button class="btn btn-primary form-control"><i class="glyphicon glyphicon-send"></i> Submit</button>
         </form>
@@ -31,17 +36,29 @@
     </div>
     <div class="row">
       <h2 class="text-center">Manage faq(s)</h2>
+      <h5 class="text-center"><em>*note: image format accepted are jpg, jpeg, gif, bmp, svg</em></h5>
       <div class="col-md-offset-2 col-md-8 col-xs-12" id="faq">
         <% faq.forEach(function(item) { %>
           <div class="jumbotron" id="<%= item.id %>">
             <form>
               <fieldset class="form-group">
                 <label for="question">Question</label>
-                <input type="text" class="form-control question" value="<%= item.question %>" disabled required/>
+                <input name="question" type="text" class="form-control" value="<%= item.question %>" disabled required/>
               </fieldset>
               <fieldset class="form-group">
                 <label for="answer">Answer</label>
-                <textarea class="form-control answer" disabled required><%- item.answer.replace(/<br\/>/g, '\n') %></textarea>
+                <textarea name="answer" class="form-control" disabled required><%- item.answer.replace(/<br\/>/g, '\n') %></textarea>
+              </fieldset>
+              <% if (item.image) { %>
+              <fieldset class="form-group">
+                <button type="button" class="close">&times;</button>
+                <label for="current-image">Current Image</label>
+                <image class="img-responsive" src="<%= item.image %>"/>
+              </fieldset>
+              <% } %>
+              <fieldset class="form-group">
+                <label for="Image">Upload New Image</label>
+                <input name="image" type="file" class="file" disabled/>
               </fieldset>
               <button class="btn btn-primary" type="button"><i class="glyphicon glyphicon-pencil"></i> Edit</button>
               <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-floppy-disk"></i> Save</button>
