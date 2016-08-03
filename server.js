@@ -25,6 +25,11 @@ app.use(auth.connect(basic));
 
 var upload = multer({dest: './views/public/images'});
 
+mongoose.connect(process.env.DATABASE);
+var FAQ = require("./app/models/faq");
+
+var encoder = new Encoder('entity');
+
 app.get('/', auth.connect(basic), function(req, res) {
     FAQ.find({}, function(err , docs) {
         if (err) return res.redirect('/');
