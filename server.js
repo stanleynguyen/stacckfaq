@@ -23,17 +23,7 @@ app.use(cors({
 }));
 app.use(auth.connect(basic));
 
-var storage = multer.diskStorage({
-    destination: function(req, file, next) {
-        next(null, './views/public/images');
-    }
-}),
-    upload = multer({storage: storage});
-
-mongoose.connect(process.env.DATABASE);
-var FAQ = require("./app/models/faq");
-
-var encoder = new Encoder('entity');
+var upload = multer({dest: './views/public/images'});
 
 app.get('/', auth.connect(basic), function(req, res) {
     FAQ.find({}, function(err , docs) {
