@@ -21,7 +21,6 @@ app.use(cors({
     origin: process.env.ALLOWEDHOST.split(','),
     methods: 'GET'
 }));
-app.use(auth.connect(basic));
 
 var upload = multer({dest: './views/public/images'});
 
