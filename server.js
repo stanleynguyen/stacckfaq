@@ -10,7 +10,8 @@ const express = require("express"),
           callback(username === process.env.USER && password === process.env.PASSWORD);
       }),
       multer = require("multer"),
-      fs = require("fs");
+      fs = require("fs"),
+      imgur = require("imgur-node-api");
       
 
 var app = express();
@@ -22,7 +23,8 @@ app.use(cors({
     methods: 'GET'
 }));
 
-var upload = multer({dest: './views/public/images'});
+var upload = multer({dest: './uploads'});
+imgur.setClientID('22df1190ee5dc8f');
 
 mongoose.connect(process.env.DATABASE);
 var FAQ = require("./app/models/faq");
@@ -50,11 +52,22 @@ app.post('/api', auth.connect(basic), function(req, res) {
         var newFaq = new FAQ();
         newFaq.question = encoder.htmlEncode(req.body.question);
         newFaq.answer = encoder.htmlEncode(req.body.answer).replace(/&#10;/g, '<br/>');
-        if (req.file) newFaq.image = 'images/' + req.file.filename;
-        newFaq.save(function(err) {
-            if (err) return res.send('error');
-            res.json(newFaq);
-        });
+        if (req.file) {
+            imgur.upload('./uploads/' + req.file.filename, function(err, uploadedImg) {
+                if (err) return res.send('error');
+                fs.unlink('./uploads/' + req.file.filename);
+                newFaq.image = uploadedImg.data.link;
+                newFaq.save(function(err) {
+                    if (err) return res.send('error');
+                    res.json(newFaq);
+                });
+            });
+        } else {
+            newFaq.save(function(err) {
+                if (err) return res.send('error');
+                res.json(newFaq);
+            });
+        }
     });
 });
 
@@ -67,11 +80,22 @@ app.put('/api', auth.connect(basic), function(req, res) {
             if (!doc) return res.send('error');
             doc.question = encoder.htmlEncode(req.body.question);
             doc.answer = encoder.htmlEncode(req.body.answer);
-            if (req.file) doc.image = 'images/' + req.file.filename;
-            doc.save(function(err) {
-                if (err) return res.send('error');
-                res.json(doc);
-            });
+            if (req.file) {
+                imgur.upload('./uploads/' + req.file.filename, function(err, uploadedImg) {
+                    if (err) return res.send('error');
+                    fs.unlink('./uploads/' + req.file.filename);
+                    doc.image = uploadedImg.data.link;
+                    doc.save(function(err) {
+                        if (err) return res.send('error');
+                        res.json(doc);
+                    });
+                });
+            } else {
+                doc.save(function(err) {
+                    if (err) return res.send('error');
+                    res.json(doc);
+                });
+            }
         });
     });
 });
@@ -79,9 +103,6 @@ app.put('/api', auth.connect(basic), function(req, res) {
 app.delete('/api', auth.connect(basic), function(req, res) {
     FAQ.findOne({_id: req.body.id}, function(err, faq) {
         if (err) return res.send('error');
-        if (faq.image) fs.unlink('./views/public/' + faq.image, function(err) {
-            if (err) return res.send('error');
-        });
         faq.remove(function(err) {
             if (err) return res.send('error');
             res.send('success');
@@ -92,9 +113,6 @@ app.delete('/api', auth.connect(basic), function(req, res) {
 app.delete('/api/image', auth.connect(basic), function(req, res) {
     FAQ.findOne({_id: req.body.id}, function(err, faq) {
         if (err) return res.send('error');
-        if (faq.image) fs.unlink('./views/public/' + faq.image, function(err) {
-            if (err) return res.send('error');
-        });
         faq.image = null;
         faq.save(function(err) {
             if (err) return res.send('error');
